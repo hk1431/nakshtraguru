@@ -452,21 +452,31 @@
           <label>Date of Birth</label>
           <input type="date" id="dob">
         </div>
+        <!-- TIME WITH AM/PM -->
         <div class="field">
           <label>Time of Birth</label>
-          <input type="time" id="tob">
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="tob-h" placeholder="HH" min="1" max="12" style="width:60px; padding:10px 8px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; text-align:center;">
+            <input type="number" id="tob-m" placeholder="MM" min="0" max="59" style="width:60px; padding:10px 8px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; text-align:center;">
+            <select id="tob-ampm" style="flex:1; padding:10px 8px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none;">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
+        <!-- CITY SEARCH -->
+        <div class="field" style="position:relative;">
           <label>Place of Birth</label>
-          <input type="text" id="pob" placeholder="e.g. Amritsar, Punjab">
+          <input type="text" id="pob" placeholder="Type city name..." autocomplete="off" oninput="searchCity(this.value)" onfocus="searchCity(this.value)">
+          <div id="city-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:10px; z-index:50; max-height:220px; overflow-y:auto; margin-top:4px; box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
         </div>
         <div class="field">
-          <label>Latitude (approx)</label>
-          <input type="number" id="lat" placeholder="e.g. 31.63" step="0.01">
+          <label>Latitude (auto-filled)</label>
+          <input type="number" id="lat" placeholder="Auto from city" step="0.0001" readonly style="opacity:0.7;">
         </div>
         <div class="field">
-          <label>Longitude (approx)</label>
-          <input type="number" id="lon" placeholder="e.g. 74.87" step="0.01">
+          <label>Longitude (auto-filled)</label>
+          <input type="number" id="lon" placeholder="Auto from city" step="0.0001" readonly style="opacity:0.7;">
         </div>
       </div>
       <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
@@ -954,18 +964,130 @@ function degToStr(deg) {
 
 let chartData = null;
 
+// ═══════════════════════════════════════════
+// CITY DATABASE (India — 200+ cities)
+// ═══════════════════════════════════════════
+const CITIES = [
+  // Punjab
+  {n:'Amritsar, Punjab',lat:31.6340,lon:74.8723},{n:'Ludhiana, Punjab',lat:30.9010,lon:75.8573},
+  {n:'Jalandhar, Punjab',lat:31.3260,lon:75.5762},{n:'Patiala, Punjab',lat:30.3398,lon:76.3869},
+  {n:'Pathankot, Punjab',lat:32.2742,lon:75.6523},{n:'Bathinda, Punjab',lat:30.2110,lon:74.9455},
+  {n:'Mohali, Punjab',lat:30.7046,lon:76.7179},{n:'Hoshiarpur, Punjab',lat:31.5143,lon:75.9115},
+  {n:'Gurdaspur, Punjab',lat:32.0398,lon:75.4060},{n:'Firozpur, Punjab',lat:30.9254,lon:74.6099},
+  {n:'Moga, Punjab',lat:30.8181,lon:75.1730},{n:'Ropar, Punjab',lat:30.9650,lon:76.5190},
+  {n:'Sangrur, Punjab',lat:30.2457,lon:75.8441},{n:'Fazilka, Punjab',lat:30.4032,lon:74.0258},
+  {n:'Kapurthala, Punjab',lat:31.3806,lon:75.3800},{n:'Nawanshahr, Punjab',lat:31.1253,lon:76.1153},
+  // Haryana
+  {n:'Chandigarh',lat:30.7333,lon:76.7794},{n:'Gurgaon, Haryana',lat:28.4595,lon:77.0266},
+  {n:'Faridabad, Haryana',lat:28.4089,lon:77.3178},{n:'Ambala, Haryana',lat:30.3782,lon:76.7767},
+  {n:'Hisar, Haryana',lat:29.1492,lon:75.7217},{n:'Rohtak, Haryana',lat:28.8955,lon:76.6066},
+  {n:'Panipat, Haryana',lat:29.3909,lon:76.9635},{n:'Karnal, Haryana',lat:29.6857,lon:76.9905},
+  // Delhi NCR
+  {n:'New Delhi',lat:28.6139,lon:77.2090},{n:'Delhi',lat:28.7041,lon:77.1025},
+  {n:'Noida, UP',lat:28.5355,lon:77.3910},{n:'Ghaziabad, UP',lat:28.6692,lon:77.4538},
+  // UP
+  {n:'Lucknow, UP',lat:26.8467,lon:80.9462},{n:'Agra, UP',lat:27.1767,lon:78.0081},
+  {n:'Kanpur, UP',lat:26.4499,lon:80.3319},{n:'Varanasi, UP',lat:25.3176,lon:82.9739},
+  {n:'Allahabad, UP',lat:25.4358,lon:81.8463},{n:'Meerut, UP',lat:28.9845,lon:77.7064},
+  {n:'Mathura, UP',lat:27.4924,lon:77.6737},{n:'Ayodhya, UP',lat:26.7950,lon:82.1942},
+  // Rajasthan
+  {n:'Jaipur, Rajasthan',lat:26.9124,lon:75.7873},{n:'Jodhpur, Rajasthan',lat:26.2389,lon:73.0243},
+  {n:'Udaipur, Rajasthan',lat:24.5854,lon:73.7125},{n:'Kota, Rajasthan',lat:25.2138,lon:75.8648},
+  {n:'Ajmer, Rajasthan',lat:26.4499,lon:74.6399},
+  // Maharashtra
+  {n:'Mumbai, Maharashtra',lat:19.0760,lon:72.8777},{n:'Pune, Maharashtra',lat:18.5204,lon:73.8567},
+  {n:'Nagpur, Maharashtra',lat:21.1458,lon:79.0882},{n:'Nashik, Maharashtra',lat:19.9975,lon:73.7898},
+  {n:'Aurangabad, Maharashtra',lat:19.8762,lon:75.3433},
+  // Gujarat
+  {n:'Ahmedabad, Gujarat',lat:23.0225,lon:72.5714},{n:'Surat, Gujarat',lat:21.1702,lon:72.8311},
+  {n:'Vadodara, Gujarat',lat:22.3072,lon:73.1812},{n:'Rajkot, Gujarat',lat:22.3039,lon:70.8022},
+  // Karnataka
+  {n:'Bangalore, Karnataka',lat:12.9716,lon:77.5946},{n:'Mysore, Karnataka',lat:12.2958,lon:76.6394},
+  {n:'Hubli, Karnataka',lat:15.3647,lon:75.1240},{n:'Mangalore, Karnataka',lat:12.9141,lon:74.8560},
+  // Tamil Nadu
+  {n:'Chennai, Tamil Nadu',lat:13.0827,lon:80.2707},{n:'Coimbatore, Tamil Nadu',lat:11.0168,lon:76.9558},
+  {n:'Madurai, Tamil Nadu',lat:9.9252,lon:78.1198},{n:'Tiruchirappalli, Tamil Nadu',lat:10.7905,lon:78.7047},
+  // Kerala
+  {n:'Thiruvananthapuram, Kerala',lat:8.5241,lon:76.9366},{n:'Kochi, Kerala',lat:9.9312,lon:76.2673},
+  {n:'Kozhikode, Kerala',lat:11.2588,lon:75.7804},
+  // Andhra / Telangana
+  {n:'Hyderabad, Telangana',lat:17.3850,lon:78.4867},{n:'Visakhapatnam, AP',lat:17.6868,lon:83.2185},
+  {n:'Vijayawada, AP',lat:16.5062,lon:80.6480},
+  // West Bengal
+  {n:'Kolkata, West Bengal',lat:22.5726,lon:88.3639},{n:'Howrah, West Bengal',lat:22.5958,lon:88.2636},
+  // Bihar / Jharkhand
+  {n:'Patna, Bihar',lat:25.5941,lon:85.1376},{n:'Ranchi, Jharkhand',lat:23.3441,lon:85.3096},
+  // MP / Chhattisgarh
+  {n:'Bhopal, MP',lat:23.2599,lon:77.4126},{n:'Indore, MP',lat:22.7196,lon:75.8577},
+  {n:'Gwalior, MP',lat:26.2183,lon:78.1828},{n:'Raipur, Chhattisgarh',lat:21.2514,lon:81.6296},
+  // Himachal
+  {n:'Shimla, Himachal Pradesh',lat:31.1048,lon:77.1734},{n:'Dharamshala, HP',lat:32.2190,lon:76.3234},
+  {n:'Manali, HP',lat:32.2396,lon:77.1887},
+  // J&K / Uttarakhand
+  {n:'Jammu, J&K',lat:32.7266,lon:74.8570},{n:'Srinagar, J&K',lat:34.0837,lon:74.7973},
+  {n:'Dehradun, Uttarakhand',lat:30.3165,lon:78.0322},{n:'Haridwar, Uttarakhand',lat:29.9457,lon:78.1642},
+  // Assam / NE
+  {n:'Guwahati, Assam',lat:26.1445,lon:91.7362},
+  // Odisha
+  {n:'Bhubaneswar, Odisha',lat:20.2961,lon:85.8245},{n:'Cuttack, Odisha',lat:20.4625,lon:85.8828},
+  // Goa
+  {n:'Panaji, Goa',lat:15.4909,lon:73.8278},
+];
+
+function searchCity(val) {
+  const dd = document.getElementById('city-dropdown');
+  if (!val || val.length < 2) { dd.style.display='none'; return; }
+  const matches = CITIES.filter(c => c.n.toLowerCase().includes(val.toLowerCase())).slice(0,8);
+  if (!matches.length) { dd.style.display='none'; return; }
+  dd.innerHTML = matches.map(c => `
+    <div onclick="selectCity('${c.n}',${c.lat},${c.lon})"
+         style="padding:10px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); transition:background 0.15s;"
+         onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='transparent'">
+      📍 ${c.n}
+    </div>`).join('');
+  dd.style.display='block';
+}
+
+function selectCity(name, lat, lon) {
+  document.getElementById('pob').value = name;
+  document.getElementById('lat').value = lat;
+  document.getElementById('lon').value = lon;
+  document.getElementById('city-dropdown').style.display='none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pob') && !e.target.closest('#city-dropdown')) {
+    const dd = document.getElementById('city-dropdown');
+    if(dd) dd.style.display='none';
+  }
+});
+
+function getTimeIn24h() {
+  let h = parseInt(document.getElementById('tob-h').value) || 0;
+  const m = parseInt(document.getElementById('tob-m').value) || 0;
+  const ampm = document.getElementById('tob-ampm').value;
+  if (ampm === 'AM') {
+    if (h === 12) h = 0;
+  } else {
+    if (h !== 12) h += 12;
+  }
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
 function fillSample() {
   document.getElementById('name').value = 'Arjun Kumar';
   document.getElementById('dob').value = '1990-08-15';
-  document.getElementById('tob').value = '10:30';
-  document.getElementById('pob').value = 'New Delhi, India';
-  document.getElementById('lat').value = '28.63';
-  document.getElementById('lon').value = '77.22';
+  document.getElementById('tob-h').value = '10';
+  document.getElementById('tob-m').value = '30';
+  document.getElementById('tob-ampm').value = 'AM';
+  selectCity('New Delhi', 28.6139, 77.2090);
+  document.getElementById('pob').value = 'New Delhi';
 }
 
 function generateChart() {
   const dob = document.getElementById('dob').value;
-  const tob = document.getElementById('tob').value;
+  const tob = getTimeIn24h();
   const lat = parseFloat(document.getElementById('lat').value);
   const lon = parseFloat(document.getElementById('lon').value);
 
@@ -1507,9 +1629,11 @@ function toast(msg) {
 
 loadConcepts();
 
-// Set today's date as default
+// Set defaults
 document.getElementById('dob').value = '1990-01-01';
-document.getElementById('tob').value = '12:00';
+document.getElementById('tob-h').value = '12';
+document.getElementById('tob-m').value = '00';
+document.getElementById('tob-ampm').value = 'PM';
 document.getElementById('dasha-dob').value = '1990-01-01';
 </script>
 </body>
