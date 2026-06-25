@@ -413,23 +413,36 @@
     <div class="logo-symbol">🪐</div>
     <div>
       <div class="logo-text">NakshtraGuru</div>
-      <div class="logo-sub">KP Astrology AI</div>
+      <div class="logo-sub" id="hdr-sub">KP Astrology AI</div>
     </div>
   </div>
-  <div class="header-badge">
-    <div class="dot"></div>
-    Powered by Claude AI
+  <div style="display:flex; align-items:center; gap:10px;">
+    <!-- LANGUAGE TOGGLE -->
+    <div style="display:flex; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:3px; gap:2px;">
+      <button id="lang-en" onclick="setLang('en')"
+        style="padding:5px 14px; border-radius:16px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; background:var(--indigo); color:#fff; font-family:Inter,sans-serif;">
+        🇬🇧 EN
+      </button>
+      <button id="lang-hi" onclick="setLang('hi')"
+        style="padding:5px 14px; border-radius:16px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; background:transparent; color:var(--muted); font-family:Inter,sans-serif;">
+        🇮🇳 HI
+      </button>
+    </div>
+    <div class="header-badge">
+      <div class="dot"></div>
+      <span id="hdr-badge">Powered by Claude AI</span>
+    </div>
   </div>
 </header>
 
 <main>
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('chart')">🪐 KP Chart</button>
-    <button class="tab" onclick="switchTab('analysis')">🔮 AI Analysis</button>
-    <button class="tab" onclick="switchTab('prashna')">❓ Prashna</button>
-    <button class="tab" onclick="switchTab('dasha')">📅 Dasha</button>
-    <button class="tab" onclick="switchTab('learn')">📚 Learn KP</button>
+    <button class="tab active" onclick="switchTab('chart')" data-en="🪐 KP Chart" data-hi="🪐 KP चार्ट">🪐 KP Chart</button>
+    <button class="tab" onclick="switchTab('analysis')" data-en="🔮 AI Analysis" data-hi="🔮 AI विश्लेषण">🔮 AI Analysis</button>
+    <button class="tab" onclick="switchTab('prashna')" data-en="❓ Prashna" data-hi="❓ प्रश्न">❓ Prashna</button>
+    <button class="tab" onclick="switchTab('dasha')" data-en="📅 Dasha" data-hi="📅 दशा">📅 Dasha</button>
+    <button class="tab" onclick="switchTab('learn')" data-en="📚 Learn KP" data-hi="📚 KP सीखें">📚 Learn KP</button>
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -437,24 +450,24 @@
   ══════════════════════════════════════════ -->
   <div id="tab-chart" class="section active">
     <div class="section-header">
-      <div class="section-title">KP Birth Chart</div>
-      <div class="section-subtitle">Enter birth details to generate accurate KP horoscope with Sub Lords</div>
+      <div class="section-title" data-en="KP Birth Chart" data-hi="KP जन्म कुंडली">KP Birth Chart</div>
+      <div class="section-subtitle" data-en="Enter birth details to generate accurate KP horoscope with Sub Lords" data-hi="सटीक KP कुंडली बनाने के लिए जन्म विवरण दर्ज करें">Enter birth details to generate accurate KP horoscope with Sub Lords</div>
     </div>
 
     <div class="card">
-      <div class="card-title"><span>✦</span> Birth Details</div>
+      <div class="card-title"><span>✦</span> <span id="birth-details-title">Birth Details</span></div>
       <div class="form-grid">
         <div class="field">
-          <label>Full Name</label>
+          <label id="lbl-name">Full Name</label>
           <input type="text" id="name" placeholder="e.g. Rahul Sharma">
         </div>
         <div class="field">
-          <label>Date of Birth</label>
+          <label id="lbl-dob">Date of Birth</label>
           <input type="date" id="dob">
         </div>
         <!-- TIME WITH AM/PM -->
         <div class="field">
-          <label>Time of Birth</label>
+          <label id="lbl-tob">Time of Birth</label>
           <div style="display:flex; gap:6px;">
             <input type="number" id="tob-h" placeholder="HH" min="1" max="12" style="width:60px; padding:10px 8px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; text-align:center;">
             <input type="number" id="tob-m" placeholder="MM" min="0" max="59" style="width:60px; padding:10px 8px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; text-align:center;">
@@ -466,23 +479,23 @@
         </div>
         <!-- CITY SEARCH -->
         <div class="field" style="position:relative;">
-          <label>Place of Birth</label>
+          <label id="lbl-pob">Place of Birth</label>
           <input type="text" id="pob" placeholder="Type city name..." autocomplete="off" oninput="searchCity(this.value)" onfocus="searchCity(this.value)">
           <div id="city-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:10px; z-index:50; max-height:220px; overflow-y:auto; margin-top:4px; box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
         </div>
         <div class="field">
-          <label>Latitude (auto-filled)</label>
+          <label id="lbl-lat">Latitude (auto-filled)</label>
           <input type="number" id="lat" placeholder="Auto from city" step="0.0001" readonly style="opacity:0.7;">
         </div>
         <div class="field">
-          <label>Longitude (auto-filled)</label>
+          <label id="lbl-lon">Longitude (auto-filled)</label>
           <input type="number" id="lon" placeholder="Auto from city" step="0.0001" readonly style="opacity:0.7;">
         </div>
       </div>
       <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <button class="btn" onclick="generateChart()">Generate KP Chart</button>
-        <button class="btn btn-outline" onclick="fillSample()">Use Sample</button>
-        <div style="font-size:12px; color:var(--muted); margin-left:4px;">
+        <button class="btn" id="btn-generate" onclick="generateChart()">Generate KP Chart</button>
+        <button class="btn btn-outline" id="btn-sample" onclick="fillSample()">Use Sample</button>
+        <div id="tip-chart" style="font-size:12px; color:var(--muted); margin-left:4px;">
           💡 Tip: Accurate birth time = accurate Sub Lord
         </div>
       </div>
@@ -497,7 +510,7 @@
     <div id="chart-results" style="display:none;">
       <!-- Planetary Positions -->
       <div class="card">
-        <div class="card-title"><span>🌌</span> Planetary Positions — Sign · Star · Sub Lord</div>
+        <div class="card-title"><span>🌌</span> <span id="planet-title">Planetary Positions — Sign · Star · Sub Lord</span></div>
         <div style="overflow-x:auto;">
           <table class="planet-table" id="planet-table">
             <thead>
@@ -518,15 +531,15 @@
 
       <!-- House Cusps -->
       <div class="card">
-        <div class="card-title"><span>🏠</span> 12 Cuspal Positions (Placidus System)</div>
+        <div class="card-title"><span>🏠</span> <span id="house-title">12 Cuspal Positions (Placidus System)</span></div>
         <div class="house-grid" id="house-grid"></div>
       </div>
 
       <!-- Ruling Planets Now -->
       <div class="card">
-        <div class="card-title"><span>⭐</span> Ruling Planets (Current Moment)</div>
+        <div class="card-title"><span>⭐</span> <span id="rp-title">Ruling Planets (Current Moment)</span></div>
         <div class="rp-grid" id="rp-grid"></div>
-        <div style="margin-top:12px; font-size:12px; color:var(--muted);">
+        <div id="rp-tip" style="margin-top:12px; font-size:12px; color:var(--muted);">
           💡 KP Rule: Ruling Planets at time of query confirm chart accuracy & event timing
         </div>
       </div>
@@ -538,35 +551,35 @@
   ══════════════════════════════════════════ -->
   <div id="tab-analysis" class="section">
     <div class="section-header">
-      <div class="section-title">AI KP Analysis</div>
-      <div class="section-subtitle">Ask any question — AI applies KP Sub Lord rules to answer</div>
+      <div class="section-title" id="analysis-title">AI KP Analysis</div>
+      <div class="section-subtitle" id="analysis-sub">Ask any question — AI applies KP Sub Lord rules to answer</div>
     </div>
 
     <div class="card">
-      <div class="card-title"><span>🔮</span> Ask Your Question</div>
+      <div class="card-title"><span>🔮</span> <span id="ask-title">Ask Your Question</span></div>
       <div style="margin-bottom:14px;">
-        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Quick Questions</label>
+        <label id="quick-lbl" style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Quick Questions</label>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I get a new job this year?')">💼 New Job?</button>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('When will I get married?')">💍 Marriage?</button>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I have children?')">👶 Children?</button>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my financial future?')">💰 Finance?</button>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Tell me about my health this year')">🏥 Health?</button>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my career path as per KP?')">🚀 Career?</button>
+          <button class="btn btn-outline" id="q-job" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I get a new job this year?')">💼 New Job?</button>
+          <button class="btn btn-outline" id="q-marry" style="padding:6px 14px; font-size:12px;" onclick="setQ('When will I get married?')">💍 Marriage?</button>
+          <button class="btn btn-outline" id="q-child" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I have children?')">👶 Children?</button>
+          <button class="btn btn-outline" id="q-finance" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my financial future?')">💰 Finance?</button>
+          <button class="btn btn-outline" id="q-health" style="padding:6px 14px; font-size:12px;" onclick="setQ('Tell me about my health this year')">🏥 Health?</button>
+          <button class="btn btn-outline" id="q-career" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my career path as per KP?')">🚀 Career?</button>
         </div>
       </div>
       <div class="field">
-        <label>Your Question</label>
-        <textarea id="question" rows="3" style="width:100%; padding:12px 14px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; resize:vertical; outline:none; font-family:'Inter',sans-serif; transition:border-color 0.2s;" placeholder="e.g. Will I get a promotion in the next 6 months? What does my 10th house sub lord indicate?"></textarea>
+        <label id="lbl-question">Your Question</label>
+        <textarea id="question" rows="3" style="width:100%; padding:12px 14px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; resize:vertical; outline:none; font-family:'Inter',sans-serif; transition:border-color 0.2s;" placeholder="e.g. Will I get a promotion in the next 6 months?"></textarea>
       </div>
       <div style="margin-top:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <div class="field" style="margin-bottom:0; min-width:200px;">
-          <label>API Key (Claude)</label>
+          <label id="lbl-apikey">API Key (Claude)</label>
           <input type="password" id="api-key" placeholder="sk-ant-api03-...">
         </div>
-        <button class="btn" style="margin-top:24px;" onclick="runAnalysis()">Get KP Analysis</button>
+        <button class="btn" id="btn-analyze" style="margin-top:24px;" onclick="runAnalysis()">Get KP Analysis</button>
       </div>
-      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+      <div id="key-note" style="margin-top:10px; font-size:11px; color:var(--muted);">
         🔒 Key stored locally only. Never sent anywhere except Claude API directly.
       </div>
     </div>
@@ -584,12 +597,11 @@
   ══════════════════════════════════════════ -->
   <div id="tab-prashna" class="section">
     <div class="section-header">
-      <div class="section-title">KP Prashna Kundali</div>
-      <div class="section-subtitle">No birth time needed — Pick a number 1–249 with a pure heart</div>
+      <div class="section-title" id="prashna-title">KP Prashna Kundali</div>
+      <div class="section-subtitle" id="prashna-sub">No birth time needed — Pick a number 1–249 with a pure heart</div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span>🎯</span> How Prashna Works in KP</div>
+      <div class="card-title"><span>🎯</span> <span id="how-title">How Prashna Works in KP</span></div>
       <div style="font-size:13px; color:var(--muted); line-height:1.8;">
         <strong style="color:var(--text);">Step 1:</strong> Clear your mind. Think only of your question.<br>
         <strong style="color:var(--text);">Step 2:</strong> Spontaneously choose a number between 1 and 249.<br>
@@ -602,16 +614,16 @@
       <div class="card-title"><span>❓</span> Your Question & Number</div>
       <div class="form-grid">
         <div class="field" style="grid-column:1/-1;">
-          <label>Your Question</label>
+          <label id="prashna-q-lbl">Your Question</label>
           <input type="text" id="prashna-q" placeholder="e.g. Will I get the loan sanctioned?">
         </div>
         <div class="field">
-          <label>KP Number (1–249)</label>
+          <label id="prashna-num-lbl">KP Number (1–249)</label>
           <input type="number" id="prashna-num" min="1" max="249" placeholder="e.g. 137">
         </div>
         <div class="field">
-          <label>Or click to choose</label>
-          <button class="btn btn-outline" onclick="randomNum()" style="width:100%; padding:10px;">🎲 Random Number</button>
+          <label>&nbsp;</label>
+          <button class="btn btn-outline" id="btn-random" onclick="randomNum()" style="width:100%; padding:10px;">🎲 Random Number</button>
         </div>
       </div>
       <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -619,7 +631,7 @@
           <label>API Key</label>
           <input type="password" id="prashna-key" placeholder="sk-ant-api03-...">
         </div>
-        <button class="btn" style="margin-top:24px;" onclick="runPrashna()">🔮 Get Prashna Reading</button>
+        <button class="btn" id="btn-prashna" style="margin-top:24px;" onclick="runPrashna()">🔮 Get Prashna Reading</button>
       </div>
     </div>
 
@@ -636,19 +648,18 @@
   ══════════════════════════════════════════ -->
   <div id="tab-dasha" class="section">
     <div class="section-header">
-      <div class="section-title">Vimshottari Dasha</div>
-      <div class="section-subtitle">120-year planetary period system — the backbone of KP timing</div>
+      <div class="section-title" id="dasha-title">Vimshottari Dasha</div>
+      <div class="section-subtitle" id="dasha-sub">120-year planetary period system — the backbone of KP timing</div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span>📅</span> Calculate Dasha Periods</div>
+      <div class="card-title"><span>📅</span> <span id="dasha-calc-title">Calculate Dasha Periods</span></div>
       <div class="form-grid">
         <div class="field">
-          <label>Date of Birth</label>
+          <label id="lbl-dasha-dob">Date of Birth</label>
           <input type="date" id="dasha-dob">
         </div>
         <div class="field">
-          <label>Moon's Nakshatra</label>
+          <label id="lbl-moon-nak">Moon's Nakshatra</label>
           <select id="moon-nak">
             <option value="">Select Nakshatra</option>
             <option value="Ashwini|Ketu|7">Ashwini (Ketu)</option>
@@ -681,28 +692,28 @@
           </select>
         </div>
         <div class="field">
-          <label>Balance at Birth (%)</label>
+          <label id="lbl-balance">Balance at Birth (%)</label>
           <input type="number" id="dasha-balance" placeholder="e.g. 65" min="0" max="100">
         </div>
       </div>
-      <button class="btn" style="margin-top:16px;" onclick="calcDasha()">Calculate Dasha</button>
+      <button class="btn" id="btn-calc-dasha" style="margin-top:16px;" onclick="calcDasha()">Calculate Dasha</button>
     </div>
 
     <div id="dasha-results" style="display:none;">
       <div class="card">
-        <div class="card-title"><span>🔄</span> Mahadasha Sequence</div>
+        <div class="card-title"><span>🔄</span> <span id="mahadasha-title">Mahadasha Sequence</span></div>
         <div id="dasha-list"></div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span>🎯</span> Current Period Analysis</div>
+        <div class="card-title"><span>🎯</span> <span id="current-dasha-title">Current Period Analysis</span></div>
         <div id="current-dasha-info" style="font-size:13px; color:var(--muted); line-height:1.8;"></div>
         <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <div class="field" style="margin-bottom:0; min-width:200px;">
             <label>API Key</label>
             <input type="password" id="dasha-key" placeholder="sk-ant-api03-...">
           </div>
-          <button class="btn" style="margin-top:24px;" onclick="analyzeDasha()">AI Dasha Analysis</button>
+          <button class="btn" id="btn-dasha-ai" style="margin-top:24px;" onclick="analyzeDasha()">AI Dasha Analysis</button>
         </div>
       </div>
 
@@ -718,8 +729,8 @@
   ══════════════════════════════════════════ -->
   <div id="tab-learn" class="section">
     <div class="section-header">
-      <div class="section-title">Learn KP Astrology</div>
-      <div class="section-subtitle">Click any concept — AI will explain with examples and KP rules</div>
+      <div class="section-title" id="learn-title">Learn KP Astrology</div>
+      <div class="section-subtitle" id="learn-sub">Click any concept — AI will explain with examples and KP rules</div>
     </div>
 
     <div class="concept-grid" id="concept-grid">
@@ -734,14 +745,14 @@
       <div id="learn-content"></div>
 
       <div style="margin-top:20px;" class="field">
-        <label>Ask a follow-up question</label>
+        <label id="follow-up-lbl">Ask a follow-up question</label>
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
           <input type="text" id="follow-up" placeholder="e.g. How do I find significators of 7th house?" style="flex:1; min-width:200px;">
           <div class="field" style="margin-bottom:0; min-width:180px;">
             <label>API Key</label>
             <input type="password" id="learn-key" placeholder="sk-ant-api03-...">
           </div>
-          <button class="btn" onclick="askFollowUp()">Ask</button>
+          <button class="btn" id="btn-ask" onclick="askFollowUp()">Ask</button>
         </div>
       </div>
     </div>
@@ -1599,6 +1610,185 @@ async function askFollowUp() {
     document.getElementById('learn-content').innerHTML += `<div class="error-box">❌ ${e.message}</div>`;
   }
   document.getElementById('learn-loader').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// LANGUAGE SYSTEM
+// ═══════════════════════════════════════════
+
+let currentLang = 'en';
+
+const LANG = {
+  en: {
+    'hdr-sub': 'KP Astrology AI',
+    'hdr-badge': 'Powered by Claude AI',
+    // Chart tab
+    'chart-title': 'KP Birth Chart',
+    'chart-sub': 'Enter birth details to generate accurate KP horoscope with Sub Lords',
+    'birth-details-title': 'Birth Details',
+    'lbl-name': 'Full Name',
+    'lbl-dob': 'Date of Birth',
+    'lbl-tob': 'Time of Birth',
+    'lbl-pob': 'Place of Birth',
+    'lbl-lat': 'Latitude (auto-filled)',
+    'lbl-lon': 'Longitude (auto-filled)',
+    'btn-generate': 'Generate KP Chart',
+    'btn-sample': 'Use Sample',
+    'tip-chart': '💡 Tip: Accurate birth time = accurate Sub Lord',
+    'planet-title': 'Planetary Positions — Sign · Star · Sub Lord',
+    'house-title': '12 Cuspal Positions (Placidus System)',
+    'rp-title': 'Ruling Planets (Current Moment)',
+    'rp-tip': '💡 KP Rule: Ruling Planets at time of query confirm chart accuracy & event timing',
+    // Analysis tab
+    'analysis-title': 'AI KP Analysis',
+    'analysis-sub': 'Ask any question — AI applies KP Sub Lord rules to answer',
+    'ask-title': 'Ask Your Question',
+    'quick-lbl': 'Quick Questions',
+    'q-job': '💼 New Job?', 'q-marry': '💍 Marriage?', 'q-child': '👶 Children?',
+    'q-finance': '💰 Finance?', 'q-health': '🏥 Health?', 'q-career': '🚀 Career?',
+    'lbl-question': 'Your Question',
+    'q-placeholder': 'e.g. Will I get a promotion in the next 6 months?',
+    'lbl-apikey': 'API Key (Claude)',
+    'btn-analyze': 'Get KP Analysis',
+    'key-note': '🔒 Key stored locally only. Never sent anywhere except Claude API directly.',
+    // Prashna tab
+    'prashna-title': 'KP Prashna Kundali',
+    'prashna-sub': 'No birth time needed — Pick a number 1–249 with a pure heart',
+    'how-title': 'How Prashna Works in KP',
+    'prashna-q-lbl': 'Your Question',
+    'prashna-num-lbl': 'KP Number (1–249)',
+    'btn-random': '🎲 Random Number',
+    'btn-prashna': '🔮 Get Prashna Reading',
+    // Dasha tab
+    'dasha-title': 'Vimshottari Dasha',
+    'dasha-sub': '120-year planetary period system — the backbone of KP timing',
+    'dasha-calc-title': 'Calculate Dasha Periods',
+    'lbl-moon-nak': "Moon's Nakshatra",
+    'lbl-balance': 'Balance at Birth (%)',
+    'btn-calc-dasha': 'Calculate Dasha',
+    'mahadasha-title': 'Mahadasha Sequence',
+    'current-dasha-title': 'Current Period Analysis',
+    'btn-dasha-ai': 'AI Dasha Analysis',
+    // Learn tab
+    'learn-title': 'Learn KP Astrology',
+    'learn-sub': 'Click any concept — AI will explain with examples and KP rules',
+    'follow-up-lbl': 'Ask a follow-up question',
+    'follow-up-placeholder': 'e.g. How do I find significators of 7th house?',
+    'btn-ask': 'Ask',
+  },
+  hi: {
+    'hdr-sub': 'KP ज्योतिष AI',
+    'hdr-badge': 'Claude AI द्वारा संचालित',
+    // Chart tab
+    'chart-title': 'KP जन्म कुंडली',
+    'chart-sub': 'सटीक KP कुंडली बनाने के लिए जन्म विवरण दर्ज करें',
+    'birth-details-title': 'जन्म विवरण',
+    'lbl-name': 'पूरा नाम',
+    'lbl-dob': 'जन्म तिथि',
+    'lbl-tob': 'जन्म समय',
+    'lbl-pob': 'जन्म स्थान',
+    'lbl-lat': 'अक्षांश (स्वतः भरेगा)',
+    'lbl-lon': 'देशांतर (स्वतः भरेगा)',
+    'btn-generate': 'KP कुंडली बनाएं',
+    'btn-sample': 'उदाहरण देखें',
+    'tip-chart': '💡 टिप: सही जन्म समय = सटीक सब लॉर्ड',
+    'planet-title': 'ग्रह स्थिति — राशि · नक्षत्र · सब लॉर्ड',
+    'house-title': '12 भाव कस्प (प्लेसिडस पद्धति)',
+    'rp-title': 'राशिपति ग्रह (अभी के)',
+    'rp-tip': '💡 KP नियम: प्रश्न के समय के राशिपति ग्रह कुंडली की सटीकता पुष्टि करते हैं',
+    // Analysis tab
+    'analysis-title': 'AI KP विश्लेषण',
+    'analysis-sub': 'कोई भी प्रश्न पूछें — AI KP सब लॉर्ड नियम से उत्तर देगा',
+    'ask-title': 'अपना प्रश्न पूछें',
+    'quick-lbl': 'जल्दी प्रश्न',
+    'q-job': '💼 नई नौकरी?', 'q-marry': '💍 विवाह?', 'q-child': '👶 संतान?',
+    'q-finance': '💰 धन?', 'q-health': '🏥 स्वास्थ्य?', 'q-career': '🚀 करियर?',
+    'lbl-question': 'आपका प्रश्न',
+    'q-placeholder': 'जैसे: क्या मुझे अगले 6 महीनों में प्रमोशन मिलेगा?',
+    'lbl-apikey': 'API कुंजी (Claude)',
+    'btn-analyze': 'KP विश्लेषण करें',
+    'key-note': '🔒 कुंजी केवल आपके डिवाइस पर — कहीं नहीं भेजी जाती',
+    // Prashna tab
+    'prashna-title': 'KP प्रश्न कुंडली',
+    'prashna-sub': 'जन्म समय की जरूरत नहीं — शुद्ध मन से 1-249 में से संख्या चुनें',
+    'how-title': 'KP प्रश्न कैसे काम करता है',
+    'prashna-q-lbl': 'आपका प्रश्न',
+    'prashna-num-lbl': 'KP संख्या (1–249)',
+    'btn-random': '🎲 यादृच्छिक संख्या',
+    'btn-prashna': '🔮 प्रश्न फल जानें',
+    // Dasha tab
+    'dasha-title': 'विंशोत्तरी दशा',
+    'dasha-sub': '120 वर्षीय ग्रह दशा प्रणाली — KP समय निर्धारण का आधार',
+    'dasha-calc-title': 'दशा काल की गणना करें',
+    'lbl-moon-nak': 'चंद्र नक्षत्र',
+    'lbl-balance': 'जन्म के समय शेष (%)',
+    'btn-calc-dasha': 'दशा गणना करें',
+    'mahadasha-title': 'महादशा क्रम',
+    'current-dasha-title': 'वर्तमान काल विश्लेषण',
+    'btn-dasha-ai': 'AI दशा विश्लेषण',
+    // Learn tab
+    'learn-title': 'KP ज्योतिष सीखें',
+    'learn-sub': 'कोई भी विषय क्लिक करें — AI उदाहरण सहित समझाएगा',
+    'follow-up-lbl': 'आगे प्रश्न पूछें',
+    'follow-up-placeholder': 'जैसे: 7वें भाव के कारक कैसे निकालें?',
+    'btn-ask': 'पूछें',
+  }
+};
+
+function setLang(lang) {
+  currentLang = lang;
+
+  // Toggle button styles
+  document.getElementById('lang-en').style.background = lang==='en' ? 'var(--indigo)' : 'transparent';
+  document.getElementById('lang-en').style.color = lang==='en' ? '#fff' : 'var(--muted)';
+  document.getElementById('lang-hi').style.background = lang==='hi' ? 'var(--indigo)' : 'transparent';
+  document.getElementById('lang-hi').style.color = lang==='hi' ? '#fff' : 'var(--muted)';
+
+  const T = LANG[lang];
+
+  // Update all elements by ID
+  const ids = [
+    'hdr-sub','hdr-badge','chart-title','chart-sub','birth-details-title',
+    'lbl-name','lbl-dob','lbl-tob','lbl-pob','lbl-lat','lbl-lon',
+    'btn-generate','btn-sample','tip-chart','planet-title','house-title',
+    'rp-title','rp-tip','analysis-title','analysis-sub','ask-title','quick-lbl',
+    'q-job','q-marry','q-child','q-finance','q-health','q-career',
+    'lbl-question','lbl-apikey','btn-analyze','key-note',
+    'prashna-title','prashna-sub','how-title','prashna-q-lbl','prashna-num-lbl',
+    'btn-random','btn-prashna','dasha-title','dasha-sub','dasha-calc-title',
+    'lbl-moon-nak','lbl-balance','btn-calc-dasha','mahadasha-title',
+    'current-dasha-title','btn-dasha-ai','learn-title','learn-sub',
+    'follow-up-lbl','follow-up-placeholder','btn-ask'
+  ];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && T[id]) {
+      if (id.includes('placeholder')) {
+        el.placeholder = T[id];
+      } else {
+        el.textContent = T[id];
+      }
+    }
+  });
+
+  // Update tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    const val = t.getAttribute('data-' + lang);
+    if (val) t.textContent = val;
+  });
+
+  // Update AI system prompt language
+  toast(lang === 'hi' ? 'हिंदी भाषा चुनी गई ✓' : 'English language selected ✓');
+}
+
+// Patch callClaude to inject Hindi instruction when needed
+const _origCallClaude = callClaude;
+async function callClaude(apiKey, systemPrompt, userPrompt) {
+  const langInstruction = currentLang === 'hi'
+    ? '\n\nIMPORTANT: Respond ENTIRELY in Hindi (Devanagari script). Use simple, clear Hindi. Keep planet names and KP technical terms bilingual like "सब लॉर्ड (Sub Lord)", "महादशा (Mahadasha)" etc.'
+    : '';
+  return _origCallClaude(apiKey, systemPrompt + langInstruction, userPrompt);
 }
 
 // ═══════════════════════════════════════════
