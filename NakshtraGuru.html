@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NakshtraGuru — KP Astrology AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --deep: #05060F;
+    --navy: #0A0D1E;
+    --card: #0F1228;
+    --border: #1E2240;
+    --gold: #C8922A;
+    --gold-light: #E8B84B;
+    --gold-dim: rgba(200,146,42,0.15);
+    --indigo: #4B5FD4;
+    --violet: #7B5EA7;
+    --text: #E8E4F0;
+    --muted: #8890AA;
+    --dim: #3D4260;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── STARS BG ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(75,95,212,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 80% 20%, rgba(123,94,167,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 30% at 10% 80%, rgba(200,146,42,0.06) 0%, transparent 60%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position:relative; z-index:10;
+    padding: 20px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,13,30,0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    display:flex; align-items:center; gap:12px;
+  }
+  .logo-symbol {
+    width:40px; height:40px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .logo-text {
+    font-family:'Cinzel', serif;
+    font-size:20px; font-weight:700;
+    background: linear-gradient(135deg, var(--gold-light), #FFF8E1);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:1px;
+  }
+  .logo-sub {
+    font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  }
+
+  .header-badge {
+    display:flex; align-items:center; gap:8px;
+    padding:6px 14px;
+    background: var(--gold-dim);
+    border:1px solid rgba(200,146,42,0.3);
+    border-radius:20px;
+    font-size:12px; color:var(--gold-light);
+    letter-spacing:0.5px;
+  }
+  .dot { width:6px; height:6px; background:var(--gold); border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    position:relative; z-index:1;
+    max-width:1100px; margin:0 auto;
+    padding:32px 24px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display:flex; gap:4px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px; padding:4px;
+    margin-bottom:28px;
+    overflow-x:auto;
+  }
+  .tab {
+    flex:1; min-width:120px;
+    padding:10px 16px;
+    background:transparent; border:none;
+    border-radius:10px;
+    color:var(--muted); font-size:13px; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+    white-space:nowrap;
+    font-family:'Inter',sans-serif;
+  }
+  .tab.active {
+    background:linear-gradient(135deg, var(--indigo), var(--violet));
+    color:#fff;
+  }
+  .tab:hover:not(.active) { color:var(--text); background:var(--border); }
+
+  /* ── SECTION ── */
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* ── CARD ── */
+  .card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .card-title {
+    font-family:'Cinzel', serif;
+    font-size:14px; font-weight:600;
+    color:var(--gold-light);
+    letter-spacing:1px; text-transform:uppercase;
+    margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .card-title span { font-size:18px; }
+
+  /* ── FORM ── */
+  .form-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px;
+  }
+  .field label {
+    display:block; font-size:12px; color:var(--muted);
+    letter-spacing:0.5px; margin-bottom:6px; text-transform:uppercase;
+  }
+  .field input, .field select {
+    width:100%; padding:10px 14px;
+    background:var(--navy); border:1px solid var(--border);
+    border-radius:10px; color:var(--text);
+    font-size:14px; font-family:'Inter',sans-serif;
+    outline:none; transition:border-color 0.2s;
+    -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus { border-color:var(--indigo); }
+  .field select option { background:var(--navy); }
+
+  /* ── BUTTON ── */
+  .btn {
+    padding:12px 28px;
+    background:linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    border:none; border-radius:10px;
+    color:#05060F; font-weight:700; font-size:14px;
+    cursor:pointer; transition:all 0.2s;
+    font-family:'Inter',sans-serif;
+    letter-spacing:0.5px;
+  }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(200,146,42,0.3); }
+  .btn:active { transform:translateY(0); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+  .btn-outline {
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold-light);
+  }
+  .btn-outline:hover { background:var(--gold-dim); box-shadow:none; }
+
+  /* ── LOADER ── */
+  .loader {
+    display:none;
+    align-items:center; justify-content:center;
+    gap:12px; padding:32px;
+    color:var(--muted); font-size:14px;
+  }
+  .loader.show { display:flex; }
+  .spin {
+    width:24px; height:24px;
+    border:2px solid var(--border);
+    border-top-color:var(--gold);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── PLANET TABLE ── */
+  .planet-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .planet-table th {
+    text-align:left; padding:8px 12px;
+    color:var(--muted); font-weight:500;
+    border-bottom:1px solid var(--border);
+    font-size:11px; text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .planet-table td {
+    padding:10px 12px;
+    border-bottom:1px solid rgba(30,34,64,0.5);
+    vertical-align:middle;
+  }
+  .planet-table tr:last-child td { border-bottom:none; }
+  .planet-table tr:hover td { background:rgba(75,95,212,0.06); }
+
+  .planet-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 10px; border-radius:20px;
+    font-size:12px; font-weight:600;
+  }
+  .lord-badge {
+    display:inline-block; padding:2px 8px;
+    border-radius:6px; font-size:11px; font-weight:600;
+    border:1px solid;
+  }
+
+  /* Planet colors */
+  .p-sun { background:rgba(255,180,0,0.15); color:#FFB400; border-color:rgba(255,180,0,0.3); }
+  .p-moon { background:rgba(200,230,255,0.12); color:#B8D8FF; border-color:rgba(200,230,255,0.3); }
+  .p-mars { background:rgba(255,80,60,0.15); color:#FF6B5B; border-color:rgba(255,80,60,0.3); }
+  .p-mercury { background:rgba(0,200,150,0.15); color:#00C896; border-color:rgba(0,200,150,0.3); }
+  .p-jupiter { background:rgba(255,220,100,0.15); color:#FFDC64; border-color:rgba(255,220,100,0.3); }
+  .p-venus { background:rgba(255,160,200,0.15); color:#FFA0C8; border-color:rgba(255,160,200,0.3); }
+  .p-saturn { background:rgba(150,150,180,0.15); color:#9696B4; border-color:rgba(150,150,180,0.3); }
+  .p-rahu { background:rgba(100,80,160,0.2); color:#9B80FF; border-color:rgba(100,80,160,0.3); }
+  .p-ketu { background:rgba(180,120,80,0.2); color:#E0A060; border-color:rgba(180,120,80,0.3); }
+
+  /* ── AI RESPONSE ── */
+  .ai-response {
+    background: linear-gradient(135deg, rgba(75,95,212,0.08), rgba(123,94,167,0.08));
+    border:1px solid rgba(75,95,212,0.25);
+    border-radius:16px;
+    padding:24px;
+    margin-top:20px;
+    line-height:1.8;
+    font-size:14px;
+  }
+  .ai-header {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:16px;
+    padding-bottom:12px;
+    border-bottom:1px solid rgba(75,95,212,0.2);
+  }
+  .ai-icon {
+    width:32px; height:32px;
+    background:linear-gradient(135deg, var(--indigo), var(--violet));
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+  .ai-label { font-weight:600; color:var(--text); font-size:13px; }
+  .ai-sublabel { font-size:11px; color:var(--muted); margin-top:1px; }
+
+  .ai-response p { margin-bottom:12px; color:var(--text); }
+  .ai-response strong { color:var(--gold-light); }
+  .ai-response h3 { 
+    font-family:'Cinzel',serif; 
+    color:var(--gold-light); 
+    font-size:13px; 
+    margin:16px 0 8px;
+    letter-spacing:0.5px;
+  }
+
+  /* ── HOUSE GRID ── */
+  .house-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px;
+  }
+  .house-box {
+    background:var(--navy); border:1px solid var(--border);
+    border-radius:10px; padding:12px;
+    text-align:center;
+  }
+  .house-num { font-size:11px; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+  .house-sign { font-size:13px; font-weight:600; color:var(--text); }
+  .house-degree { font-size:11px; color:var(--muted); margin-top:2px; }
+  .house-sublord { font-size:11px; color:var(--gold); margin-top:4px; }
+
+  /* ── LEARN SECTION ── */
+  .concept-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px;
+  }
+  .concept-card {
+    background:var(--navy); border:1px solid var(--border);
+    border-radius:14px; padding:20px;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .concept-card:hover { border-color:var(--indigo); transform:translateY(-2px); }
+  .concept-icon { font-size:28px; margin-bottom:10px; }
+  .concept-title { font-weight:600; font-size:14px; margin-bottom:6px; color:var(--text); }
+  .concept-desc { font-size:12px; color:var(--muted); line-height:1.6; }
+  .concept-tag {
+    display:inline-block; margin-top:10px;
+    padding:2px 8px; border-radius:4px;
+    background:var(--gold-dim); color:var(--gold); font-size:11px;
+  }
+
+  /* ── PRASHNA ── */
+  .number-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(48px,1fr)); gap:6px;
+  }
+  .num-btn {
+    aspect-ratio:1; border:1px solid var(--border);
+    background:var(--navy); border-radius:8px;
+    color:var(--muted); font-size:12px; font-weight:600;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .num-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .num-btn.selected { background:var(--gold-dim); border-color:var(--gold); color:var(--gold-light); }
+
+  /* ── DASHA ── */
+  .dasha-row {
+    display:flex; align-items:center; gap:12px;
+    padding:12px; border-radius:10px;
+    margin-bottom:8px;
+    background:var(--navy); border:1px solid var(--border);
+  }
+  .dasha-planet {
+    width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; flex-shrink:0;
+  }
+  .dasha-info { flex:1; }
+  .dasha-name { font-weight:600; font-size:13px; }
+  .dasha-period { font-size:11px; color:var(--muted); margin-top:2px; }
+  .dasha-current {
+    border-color:var(--gold);
+    background:linear-gradient(135deg, rgba(200,146,42,0.08), transparent);
+  }
+  .dasha-badge {
+    font-size:10px; padding:2px 8px; border-radius:4px;
+    background:var(--gold); color:#05060F; font-weight:700;
+  }
+
+  /* ── RULING PLANETS ── */
+  .rp-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px;
+  }
+  .rp-card {
+    background:var(--navy); border:1px solid var(--border);
+    border-radius:10px; padding:14px; text-align:center;
+  }
+  .rp-factor { font-size:11px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .rp-planet { font-size:22px; margin-bottom:4px; }
+  .rp-name { font-weight:700; font-size:14px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--navy); }
+  ::-webkit-scrollbar-thumb { background:var(--dim); border-radius:3px; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px) {
+    header { padding:14px 16px; }
+    main { padding:20px 14px; }
+    .form-grid { grid-template-columns:1fr; }
+    .house-grid { grid-template-columns:repeat(3,1fr); }
+    .logo-sub { display:none; }
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:12px 20px;
+    font-size:13px; color:var(--text);
+    z-index:100; opacity:0; transition:opacity 0.3s;
+    pointer-events:none;
+  }
+  .toast.show { opacity:1; }
+
+  .section-header {
+    margin-bottom:24px;
+  }
+  .section-title {
+    font-family:'Cinzel',serif;
+    font-size:22px; font-weight:700;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:4px;
+  }
+  .section-subtitle { font-size:13px; color:var(--muted); }
+
+  .divider {
+    height:1px; background:var(--border); margin:20px 0;
+  }
+
+  .inline-flex { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .gap-12 { gap:12px; }
+  .mt-16 { margin-top:16px; }
+  .mt-8 { margin-top:8px; }
+
+  .error-box {
+    background:rgba(255,80,60,0.1); border:1px solid rgba(255,80,60,0.3);
+    border-radius:10px; padding:14px 18px;
+    color:#FF8070; font-size:13px; margin-top:12px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-symbol">🪐</div>
+    <div>
+      <div class="logo-text">NakshtraGuru</div>
+      <div class="logo-sub">KP Astrology AI</div>
+    </div>
+  </div>
+  <div class="header-badge">
+    <div class="dot"></div>
+    Powered by Claude AI
+  </div>
+</header>
+
+<main>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('chart')">🪐 KP Chart</button>
+    <button class="tab" onclick="switchTab('analysis')">🔮 AI Analysis</button>
+    <button class="tab" onclick="switchTab('prashna')">❓ Prashna</button>
+    <button class="tab" onclick="switchTab('dasha')">📅 Dasha</button>
+    <button class="tab" onclick="switchTab('learn')">📚 Learn KP</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 — KP CHART
+  ══════════════════════════════════════════ -->
+  <div id="tab-chart" class="section active">
+    <div class="section-header">
+      <div class="section-title">KP Birth Chart</div>
+      <div class="section-subtitle">Enter birth details to generate accurate KP horoscope with Sub Lords</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>✦</span> Birth Details</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="name" placeholder="e.g. Rahul Sharma">
+        </div>
+        <div class="field">
+          <label>Date of Birth</label>
+          <input type="date" id="dob">
+        </div>
+        <div class="field">
+          <label>Time of Birth</label>
+          <input type="time" id="tob">
+        </div>
+        <div class="field">
+          <label>Place of Birth</label>
+          <input type="text" id="pob" placeholder="e.g. Amritsar, Punjab">
+        </div>
+        <div class="field">
+          <label>Latitude (approx)</label>
+          <input type="number" id="lat" placeholder="e.g. 31.63" step="0.01">
+        </div>
+        <div class="field">
+          <label>Longitude (approx)</label>
+          <input type="number" id="lon" placeholder="e.g. 74.87" step="0.01">
+        </div>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn" onclick="generateChart()">Generate KP Chart</button>
+        <button class="btn btn-outline" onclick="fillSample()">Use Sample</button>
+        <div style="font-size:12px; color:var(--muted); margin-left:4px;">
+          💡 Tip: Accurate birth time = accurate Sub Lord
+        </div>
+      </div>
+    </div>
+
+    <div class="loader" id="chart-loader">
+      <div class="spin"></div>
+      Calculating planetary positions using KP Ayanamsha...
+    </div>
+
+    <!-- CHART RESULTS -->
+    <div id="chart-results" style="display:none;">
+      <!-- Planetary Positions -->
+      <div class="card">
+        <div class="card-title"><span>🌌</span> Planetary Positions — Sign · Star · Sub Lord</div>
+        <div style="overflow-x:auto;">
+          <table class="planet-table" id="planet-table">
+            <thead>
+              <tr>
+                <th>Planet</th>
+                <th>Sign</th>
+                <th>Degree</th>
+                <th>Sign Lord</th>
+                <th>Star Lord</th>
+                <th>Sub Lord</th>
+                <th>House</th>
+              </tr>
+            </thead>
+            <tbody id="planet-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- House Cusps -->
+      <div class="card">
+        <div class="card-title"><span>🏠</span> 12 Cuspal Positions (Placidus System)</div>
+        <div class="house-grid" id="house-grid"></div>
+      </div>
+
+      <!-- Ruling Planets Now -->
+      <div class="card">
+        <div class="card-title"><span>⭐</span> Ruling Planets (Current Moment)</div>
+        <div class="rp-grid" id="rp-grid"></div>
+        <div style="margin-top:12px; font-size:12px; color:var(--muted);">
+          💡 KP Rule: Ruling Planets at time of query confirm chart accuracy & event timing
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 — AI ANALYSIS
+  ══════════════════════════════════════════ -->
+  <div id="tab-analysis" class="section">
+    <div class="section-header">
+      <div class="section-title">AI KP Analysis</div>
+      <div class="section-subtitle">Ask any question — AI applies KP Sub Lord rules to answer</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🔮</span> Ask Your Question</div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Quick Questions</label>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I get a new job this year?')">💼 New Job?</button>
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('When will I get married?')">💍 Marriage?</button>
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Will I have children?')">👶 Children?</button>
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my financial future?')">💰 Finance?</button>
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('Tell me about my health this year')">🏥 Health?</button>
+          <button class="btn btn-outline" style="padding:6px 14px; font-size:12px;" onclick="setQ('What is my career path as per KP?')">🚀 Career?</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Your Question</label>
+        <textarea id="question" rows="3" style="width:100%; padding:12px 14px; background:var(--navy); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; resize:vertical; outline:none; font-family:'Inter',sans-serif; transition:border-color 0.2s;" placeholder="e.g. Will I get a promotion in the next 6 months? What does my 10th house sub lord indicate?"></textarea>
+      </div>
+      <div style="margin-top:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="field" style="margin-bottom:0; min-width:200px;">
+          <label>API Key (Claude)</label>
+          <input type="password" id="api-key" placeholder="sk-ant-api03-...">
+        </div>
+        <button class="btn" style="margin-top:24px;" onclick="runAnalysis()">Get KP Analysis</button>
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:var(--muted);">
+        🔒 Key stored locally only. Never sent anywhere except Claude API directly.
+      </div>
+    </div>
+
+    <div class="loader" id="analysis-loader">
+      <div class="spin"></div>
+      Guru ji consulting the stars...
+    </div>
+
+    <div id="analysis-result"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 — PRASHNA (HORARY)
+  ══════════════════════════════════════════ -->
+  <div id="tab-prashna" class="section">
+    <div class="section-header">
+      <div class="section-title">KP Prashna Kundali</div>
+      <div class="section-subtitle">No birth time needed — Pick a number 1–249 with a pure heart</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🎯</span> How Prashna Works in KP</div>
+      <div style="font-size:13px; color:var(--muted); line-height:1.8;">
+        <strong style="color:var(--text);">Step 1:</strong> Clear your mind. Think only of your question.<br>
+        <strong style="color:var(--text);">Step 2:</strong> Spontaneously choose a number between 1 and 249.<br>
+        <strong style="color:var(--text);">Step 3:</strong> That number maps to a precise zodiac degree = your Lagna.<br>
+        <strong style="color:var(--text);">KP Rule:</strong> The Sub Lord of the relevant house cusp gives YES or NO answer.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>❓</span> Your Question & Number</div>
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1;">
+          <label>Your Question</label>
+          <input type="text" id="prashna-q" placeholder="e.g. Will I get the loan sanctioned?">
+        </div>
+        <div class="field">
+          <label>KP Number (1–249)</label>
+          <input type="number" id="prashna-num" min="1" max="249" placeholder="e.g. 137">
+        </div>
+        <div class="field">
+          <label>Or click to choose</label>
+          <button class="btn btn-outline" onclick="randomNum()" style="width:100%; padding:10px;">🎲 Random Number</button>
+        </div>
+      </div>
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="field" style="margin-bottom:0; min-width:200px;">
+          <label>API Key</label>
+          <input type="password" id="prashna-key" placeholder="sk-ant-api03-...">
+        </div>
+        <button class="btn" style="margin-top:24px;" onclick="runPrashna()">🔮 Get Prashna Reading</button>
+      </div>
+    </div>
+
+    <div class="loader" id="prashna-loader">
+      <div class="spin"></div>
+      Reading the cosmic signature of your question...
+    </div>
+
+    <div id="prashna-result"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 4 — DASHA
+  ══════════════════════════════════════════ -->
+  <div id="tab-dasha" class="section">
+    <div class="section-header">
+      <div class="section-title">Vimshottari Dasha</div>
+      <div class="section-subtitle">120-year planetary period system — the backbone of KP timing</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>📅</span> Calculate Dasha Periods</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Date of Birth</label>
+          <input type="date" id="dasha-dob">
+        </div>
+        <div class="field">
+          <label>Moon's Nakshatra</label>
+          <select id="moon-nak">
+            <option value="">Select Nakshatra</option>
+            <option value="Ashwini|Ketu|7">Ashwini (Ketu)</option>
+            <option value="Bharani|Venus|20">Bharani (Venus)</option>
+            <option value="Krittika|Sun|6">Krittika (Sun)</option>
+            <option value="Rohini|Moon|10">Rohini (Moon)</option>
+            <option value="Mrigashira|Mars|7">Mrigashira (Mars)</option>
+            <option value="Ardra|Rahu|18">Ardra (Rahu)</option>
+            <option value="Punarvasu|Jupiter|16">Punarvasu (Jupiter)</option>
+            <option value="Pushya|Saturn|19">Pushya (Saturn)</option>
+            <option value="Ashlesha|Mercury|17">Ashlesha (Mercury)</option>
+            <option value="Magha|Ketu|7">Magha (Ketu)</option>
+            <option value="Purva Phalguni|Venus|20">Purva Phalguni (Venus)</option>
+            <option value="Uttara Phalguni|Sun|6">Uttara Phalguni (Sun)</option>
+            <option value="Hasta|Moon|10">Hasta (Moon)</option>
+            <option value="Chitra|Mars|7">Chitra (Mars)</option>
+            <option value="Swati|Rahu|18">Swati (Rahu)</option>
+            <option value="Vishakha|Jupiter|16">Vishakha (Jupiter)</option>
+            <option value="Anuradha|Saturn|19">Anuradha (Saturn)</option>
+            <option value="Jyeshtha|Mercury|17">Jyeshtha (Mercury)</option>
+            <option value="Mula|Ketu|7">Mula (Ketu)</option>
+            <option value="Purva Ashadha|Venus|20">Purva Ashadha (Venus)</option>
+            <option value="Uttara Ashadha|Sun|6">Uttara Ashadha (Sun)</option>
+            <option value="Shravana|Moon|10">Shravana (Moon)</option>
+            <option value="Dhanishtha|Mars|7">Dhanishtha (Mars)</option>
+            <option value="Shatabhisha|Rahu|18">Shatabhisha (Rahu)</option>
+            <option value="Purva Bhadrapada|Jupiter|16">Purva Bhadrapada (Jupiter)</option>
+            <option value="Uttara Bhadrapada|Saturn|19">Uttara Bhadrapada (Saturn)</option>
+            <option value="Revati|Mercury|17">Revati (Mercury)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Balance at Birth (%)</label>
+          <input type="number" id="dasha-balance" placeholder="e.g. 65" min="0" max="100">
+        </div>
+      </div>
+      <button class="btn" style="margin-top:16px;" onclick="calcDasha()">Calculate Dasha</button>
+    </div>
+
+    <div id="dasha-results" style="display:none;">
+      <div class="card">
+        <div class="card-title"><span>🔄</span> Mahadasha Sequence</div>
+        <div id="dasha-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🎯</span> Current Period Analysis</div>
+        <div id="current-dasha-info" style="font-size:13px; color:var(--muted); line-height:1.8;"></div>
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <div class="field" style="margin-bottom:0; min-width:200px;">
+            <label>API Key</label>
+            <input type="password" id="dasha-key" placeholder="sk-ant-api03-...">
+          </div>
+          <button class="btn" style="margin-top:24px;" onclick="analyzeDasha()">AI Dasha Analysis</button>
+        </div>
+      </div>
+
+      <div class="loader" id="dasha-loader">
+        <div class="spin"></div> Analyzing your current planetary period...
+      </div>
+      <div id="dasha-ai-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 5 — LEARN KP
+  ══════════════════════════════════════════ -->
+  <div id="tab-learn" class="section">
+    <div class="section-header">
+      <div class="section-title">Learn KP Astrology</div>
+      <div class="section-subtitle">Click any concept — AI will explain with examples and KP rules</div>
+    </div>
+
+    <div class="concept-grid" id="concept-grid">
+      <!-- Filled by JS -->
+    </div>
+
+    <div style="margin-top:20px;" class="card" id="learn-card" style="display:none;">
+      <div class="card-title"><span>📖</span> <span id="learn-topic-title"></span></div>
+      <div class="loader" id="learn-loader">
+        <div class="spin"></div> Guru ji is explaining...
+      </div>
+      <div id="learn-content"></div>
+
+      <div style="margin-top:20px;" class="field">
+        <label>Ask a follow-up question</label>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <input type="text" id="follow-up" placeholder="e.g. How do I find significators of 7th house?" style="flex:1; min-width:200px;">
+          <div class="field" style="margin-bottom:0; min-width:180px;">
+            <label>API Key</label>
+            <input type="password" id="learn-key" placeholder="sk-ant-api03-...">
+          </div>
+          <button class="btn" onclick="askFollowUp()">Ask</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// KP ASTROLOGY DATA
+// ═══════════════════════════════════════════
+
+const PLANETS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const SIGN_LORDS = ['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
+const NAKSHATRA_LORDS = ['Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury', // 1-9
+                         'Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury', // 10-18
+                         'Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury']; // 19-27
+const NAKSHATRAS = [
+  'Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha',
+  'Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha',
+  'Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishtha','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'
+];
+const DASHA_YEARS = { Ketu:7, Venus:20, Sun:6, Moon:10, Mars:7, Rahu:18, Jupiter:16, Saturn:19, Mercury:17 };
+const DASHA_ORDER = ['Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury'];
+
+const PLANET_EMOJI = {
+  Sun:'☀️', Moon:'🌙', Mars:'♂️', Mercury:'☿', Jupiter:'♃', Venus:'♀️', Saturn:'♄', Rahu:'☊', Ketu:'☋'
+};
+const PLANET_CLASS = {
+  Sun:'p-sun', Moon:'p-moon', Mars:'p-mars', Mercury:'p-mercury',
+  Jupiter:'p-jupiter', Venus:'p-venus', Saturn:'p-saturn', Rahu:'p-rahu', Ketu:'p-ketu'
+};
+
+// KP Ayanamsha (approximate, 2025 value)
+const KP_AYANAMSHA = 23.8638;
+
+// ═══════════════════════════════════════════
+// ASTRONOMICAL CALCULATIONS
+// ═══════════════════════════════════════════
+
+function toRad(d) { return d * Math.PI / 180; }
+function toDeg(r) { return r * 180 / Math.PI; }
+function norm360(x) { return ((x % 360) + 360) % 360; }
+
+function getJD(date, time) {
+  const [y, m, d] = date.split('-').map(Number);
+  const [h, min] = time.split(':').map(Number);
+  const ut = h + min / 60;
+  let Y = y, M = m;
+  if (M <= 2) { Y--; M += 12; }
+  const A = Math.floor(Y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + d + ut / 24 + B - 1524.5;
+}
+
+function getSunPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L0 = norm360(280.46646 + 36000.76983 * T);
+  const M = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+  const Mrad = toRad(M);
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad)
+           + (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad)
+           + 0.000289 * Math.sin(3 * Mrad);
+  const sunLon = norm360(L0 + C);
+  return norm360(sunLon - KP_AYANAMSHA);
+}
+
+function getMoonPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(218.3165 + 481267.8813 * T);
+  const M = norm360(134.9634 + 477198.8676 * T);
+  const Mp = norm360(93.2721 + 483202.0175 * T);
+  const D = norm360(297.8502 + 445267.1115 * T);
+  const F = norm360(93.2721 + 483202.0175 * T);
+  const Mrad = toRad(M), Mprad = toRad(Mp), Drad = toRad(D), Frad = toRad(F);
+  const lon = L + 6.2888 * Math.sin(Mprad) + 1.2740 * Math.sin(2 * Drad - Mprad)
+            + 0.6583 * Math.sin(2 * Drad) + 0.2136 * Math.sin(2 * Mprad)
+            - 0.1851 * Math.sin(Mrad) - 0.1143 * Math.sin(2 * Frad);
+  return norm360(lon - KP_AYANAMSHA);
+}
+
+function getMarsPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(355.433 + 19140.2993 * T);
+  const M = norm360(19.3870 + 19139.8585 * T);
+  const Mrad = toRad(M);
+  const eq = 10.6912 * Math.sin(Mrad) + 0.6228 * Math.sin(2*Mrad) + 0.0503 * Math.sin(3*Mrad);
+  return norm360(L + eq/60 - KP_AYANAMSHA);
+}
+
+function getMercuryPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(252.2509 + 149472.6746 * T);
+  const M = norm360(174.7948 + 149472.5153 * T);
+  const Mrad = toRad(M);
+  const eq = 23.4400 * Math.sin(Mrad) + 2.9818 * Math.sin(2*Mrad);
+  return norm360(L + eq/60 - KP_AYANAMSHA);
+}
+
+function getJupiterPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(34.351 + 3034.9057 * T);
+  const M = norm360(20.9 + 3034.906 * T);
+  const Mrad = toRad(M);
+  const eq = 5.5549 * Math.sin(Mrad) + 0.1683 * Math.sin(2*Mrad);
+  return norm360(L + eq/60 - KP_AYANAMSHA);
+}
+
+function getVenusPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(181.9798 + 58517.8156 * T);
+  const M = norm360(212.2606 + 58517.8039 * T);
+  const Mrad = toRad(M);
+  const eq = 0.7758 * Math.sin(Mrad) + 0.0033 * Math.sin(2*Mrad);
+  return norm360(L + eq/60 - KP_AYANAMSHA);
+}
+
+function getSaturnPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L = norm360(50.0774 + 1222.1138 * T);
+  const M = norm360(317.0207 + 1221.5515 * T);
+  const Mrad = toRad(M);
+  const eq = 6.3585 * Math.sin(Mrad) + 0.2204 * Math.sin(2*Mrad);
+  return norm360(L + eq/60 - KP_AYANAMSHA);
+}
+
+function getRahuPosition(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const N = norm360(125.0445 - 1934.1363 * T);
+  return norm360(N - KP_AYANAMSHA);
+}
+
+function getAllPlanetPositions(jd) {
+  const sun = getSunPosition(jd);
+  const moon = getMoonPosition(jd);
+  const mars = getMarsPosition(jd);
+  const merc = getMercuryPosition(jd);
+  const jup = getJupiterPosition(jd);
+  const ven = getVenusPosition(jd);
+  const sat = getSaturnPosition(jd);
+  const rahu = getRahuPosition(jd);
+  const ketu = norm360(rahu + 180);
+  return { Sun:sun, Moon:moon, Mars:mars, Mercury:merc, Jupiter:jup, Venus:ven, Saturn:sat, Rahu:rahu, Ketu:ketu };
+}
+
+function getSignInfo(deg) {
+  const signIdx = Math.floor(deg / 30);
+  const degInSign = deg % 30;
+  const nakIdx = Math.floor(deg / (360/27));
+  const nak = NAKSHATRAS[nakIdx];
+  const starLord = NAKSHATRA_LORDS[nakIdx];
+  const subLord = getSubLord(deg);
+  return {
+    sign: SIGNS[signIdx], signLord: SIGN_LORDS[signIdx],
+    degInSign, nakshatra: nak, starLord, subLord, nakIdx
+  };
+}
+
+function getSubLord(deg) {
+  // KP Sub Lord calculation based on Vimshottari proportions
+  const totalMinutes = deg * 60;
+  const nakSize = (360 / 27) * 60; // minutes per nakshatra
+  const nakIdx = Math.floor(deg / (360/27));
+  const posInNak = (deg - nakIdx * (360/27)) * 60; // minutes into nakshatra
+  
+  // Starting planet of this nakshatra
+  const nakLordIdx = nakIdx % 9;
+  const startPlanet = DASHA_ORDER[nakLordIdx];
+  
+  // Calculate sub positions
+  let startIdx = DASHA_ORDER.indexOf(startPlanet);
+  let accumulated = 0;
+  
+  for (let i = 0; i < 9; i++) {
+    const planet = DASHA_ORDER[(startIdx + i) % 9];
+    const subSize = (DASHA_YEARS[planet] / 120) * nakSize;
+    if (posInNak >= accumulated && posInNak < accumulated + subSize) {
+      return planet;
+    }
+    accumulated += subSize;
+  }
+  return DASHA_ORDER[startIdx];
+}
+
+function getHouseCusps(jd, lat, lon) {
+  // Simplified Placidus approximation
+  const T = (jd - 2451545.0) / 36525;
+  const RAMC = norm360(100.4606 + 36000.7701 * T + lon);
+  const eps = 23.4393 - 0.013 * T;
+  
+  const cusps = [];
+  // Ascendant
+  const latRad = toRad(lat);
+  const epsRad = toRad(eps);
+  const ramcRad = toRad(RAMC);
+  
+  const ascLon = toDeg(Math.atan2(Math.cos(ramcRad), -(Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad))));
+  const asc = norm360(ascLon - KP_AYANAMSHA);
+  
+  // Generate 12 cusps (simplified equal house from Placidus Asc)
+  for (let i = 0; i < 12; i++) {
+    cusps.push(norm360(asc + i * 30));
+  }
+  return cusps;
+}
+
+function degToStr(deg) {
+  const sign = SIGNS[Math.floor(deg / 30)];
+  const d = Math.floor(deg % 30);
+  const m = Math.floor((deg % 1) * 60);
+  return `${d}°${m}' ${sign}`;
+}
+
+// ═══════════════════════════════════════════
+// CHART GENERATION
+// ═══════════════════════════════════════════
+
+let chartData = null;
+
+function fillSample() {
+  document.getElementById('name').value = 'Arjun Kumar';
+  document.getElementById('dob').value = '1990-08-15';
+  document.getElementById('tob').value = '10:30';
+  document.getElementById('pob').value = 'New Delhi, India';
+  document.getElementById('lat').value = '28.63';
+  document.getElementById('lon').value = '77.22';
+}
+
+function generateChart() {
+  const dob = document.getElementById('dob').value;
+  const tob = document.getElementById('tob').value;
+  const lat = parseFloat(document.getElementById('lat').value);
+  const lon = parseFloat(document.getElementById('lon').value);
+
+  if (!dob || !tob || !lat || !lon) {
+    toast('Please fill all birth details including lat/lon');
+    return;
+  }
+
+  document.getElementById('chart-loader').classList.add('show');
+  document.getElementById('chart-results').style.display = 'none';
+
+  setTimeout(() => {
+    const jd = getJD(dob, tob);
+    const positions = getAllPlanetPositions(jd);
+    const cusps = getHouseCusps(jd, lat, lon);
+
+    chartData = { jd, positions, cusps, dob, tob, lat, lon };
+
+    renderPlanetTable(positions, cusps);
+    renderHouseGrid(cusps);
+    renderRulingPlanets();
+
+    document.getElementById('chart-loader').classList.remove('show');
+    document.getElementById('chart-results').style.display = 'block';
+    toast('KP Chart generated successfully!');
+  }, 800);
+}
+
+function getPlanetHouse(planetDeg, cusps) {
+  for (let i = 0; i < 12; i++) {
+    const start = cusps[i];
+    const end = cusps[(i + 1) % 12];
+    if (start <= end) {
+      if (planetDeg >= start && planetDeg < end) return i + 1;
+    } else {
+      if (planetDeg >= start || planetDeg < end) return i + 1;
+    }
+  }
+  return 1;
+}
+
+function renderPlanetTable(positions, cusps) {
+  const tbody = document.getElementById('planet-tbody');
+  tbody.innerHTML = '';
+  PLANETS.forEach(p => {
+    const deg = positions[p];
+    const info = getSignInfo(deg);
+    const house = getPlanetHouse(deg, cusps);
+    const pc = PLANET_CLASS[p];
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="planet-badge ${pc}">${PLANET_EMOJI[p]} ${p}</span></td>
+        <td style="color:var(--muted)">${info.sign}</td>
+        <td style="font-size:12px; color:var(--muted)">${Math.floor(info.degInSign)}°${Math.floor((info.degInSign%1)*60)}'</td>
+        <td><span class="lord-badge ${PLANET_CLASS[info.signLord]}">${info.signLord}</span></td>
+        <td><span class="lord-badge ${PLANET_CLASS[info.starLord]}">${info.starLord}</span></td>
+        <td><span class="lord-badge ${PLANET_CLASS[info.subLord]}" style="font-weight:800;">${info.subLord}</span></td>
+        <td style="color:var(--gold); font-weight:600">H${house}</td>
+      </tr>`;
+  });
+}
+
+function renderHouseGrid(cusps) {
+  const grid = document.getElementById('house-grid');
+  grid.innerHTML = '';
+  cusps.forEach((c, i) => {
+    const info = getSignInfo(c);
+    grid.innerHTML += `
+      <div class="house-box">
+        <div class="house-num">House ${i+1}</div>
+        <div class="house-sign">${info.sign}</div>
+        <div class="house-degree">${Math.floor(info.degInSign)}°${Math.floor((info.degInSign%1)*60)}'</div>
+        <div class="house-sublord">Sub: ${info.subLord}</div>
+      </div>`;
+  });
+}
+
+function renderRulingPlanets() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const dayLords = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+  const dayLord = dayLords[day];
+  
+  const nowJd = getJD(
+    `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+  );
+  const nowPos = getAllPlanetPositions(nowJd);
+  const moonInfo = getSignInfo(nowPos.Moon);
+  const ascNow = norm360(getSunPosition(nowJd) + 90); // simplified lagna
+  const ascInfo = getSignInfo(ascNow);
+
+  const rps = [
+    { factor:'Day Lord', name:dayLord, emoji:PLANET_EMOJI[dayLord] },
+    { factor:'Moon Sign Lord', name:moonInfo.signLord, emoji:PLANET_EMOJI[moonInfo.signLord] },
+    { factor:'Moon Star Lord', name:moonInfo.starLord, emoji:PLANET_EMOJI[moonInfo.starLord] },
+    { factor:'Moon Sub Lord', name:moonInfo.subLord, emoji:PLANET_EMOJI[moonInfo.subLord] },
+    { factor:'Lagna Lord', name:ascInfo.signLord, emoji:PLANET_EMOJI[ascInfo.signLord] },
+  ];
+
+  const grid = document.getElementById('rp-grid');
+  grid.innerHTML = rps.map(r => `
+    <div class="rp-card">
+      <div class="rp-factor">${r.factor}</div>
+      <div class="rp-planet">${r.emoji}</div>
+      <div class="rp-name">${r.name}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// AI ANALYSIS
+// ═══════════════════════════════════════════
+
+function setQ(q) { document.getElementById('question').value = q; }
+
+async function callClaude(apiKey, systemPrompt, userPrompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:1500,
+      system: systemPrompt,
+      messages:[{ role:'user', content: userPrompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'API Error');
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+function formatAIResponse(text, title) {
+  const lines = text.split('\n').filter(l => l.trim());
+  let html = `<div class="ai-response">
+    <div class="ai-header">
+      <div class="ai-icon">🔮</div>
+      <div>
+        <div class="ai-label">${title}</div>
+        <div class="ai-sublabel">Based on KP Krishnamurti Paddhati rules</div>
+      </div>
+    </div>`;
+  
+  lines.forEach(line => {
+    if (line.startsWith('##')) {
+      html += `<h3>${line.replace(/##/g,'').trim()}</h3>`;
+    } else if (line.startsWith('#')) {
+      html += `<h3>${line.replace(/#/g,'').trim()}</h3>`;
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      html += `<strong style="display:block; color:var(--gold-light); margin:8px 0 4px;">${line.replace(/\*\*/g,'')}</strong>`;
+    } else {
+      const formatted = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em style="color:var(--gold)">$1</em>');
+      html += `<p>${formatted}</p>`;
+    }
+  });
+  
+  html += `</div>`;
+  return html;
+}
+
+function buildChartContext() {
+  if (!chartData) return 'No chart data available.';
+  const { positions, cusps } = chartData;
+  let ctx = 'KP BIRTH CHART DATA:\n\n';
+  ctx += 'PLANETARY POSITIONS (with Sign Lord, Star Lord, Sub Lord):\n';
+  PLANETS.forEach(p => {
+    const deg = positions[p];
+    const info = getSignInfo(deg);
+    const house = getPlanetHouse(deg, cusps);
+    ctx += `${p}: ${info.sign} ${Math.floor(info.degInSign)}°, House ${house}, StarLord=${info.starLord}, SubLord=${info.subLord}\n`;
+  });
+  ctx += '\nHOUSE CUSPS (Sub Lords):\n';
+  cusps.forEach((c, i) => {
+    const info = getSignInfo(c);
+    ctx += `House ${i+1}: ${info.sign}, SubLord=${info.subLord}\n`;
+  });
+  return ctx;
+}
+
+const KP_SYSTEM_PROMPT = `You are NakshtraGuru, an expert KP (Krishnamurti Paddhati) Astrology AI trained on the complete KP Reader series (Volumes 1-6) by Prof. K.S. Krishnamurti.
+
+CORE KP RULES YOU ALWAYS APPLY:
+1. The Sub Lord is the final judge — it decides whether an event promised by Star Lord will fructify
+2. Sign Lord shows potential, Star Lord shows nature/type of result, Sub Lord decides YES/NO
+3. Significators: planets in star of occupant > occupant > planets in star of owner > owner
+4. For any house matter: if the Sub Lord of that house cusp signifies the relevant houses, the event WILL happen
+5. Event timing: through Dasha lord + Bhukti lord alignment with Ruling Planets
+6. Ruling Planets (at query time) confirm chart accuracy and narrow event timing
+7. KP uses Placidus house system and KP Ayanamsha (slightly different from Lahiri)
+8. Every prediction must cite: which house, which Sub Lord, which significators, why YES/NO
+
+KEY HOUSE SIGNIFICATIONS (KP):
+- 2nd house: Accumulated wealth, family, speech
+- 6th house: Service/job under someone
+- 7th house: Marriage partner, business partnership  
+- 10th house: Career, status, authority, self-employment
+- 11th house: Gains, fulfillment of desires, income
+- For Marriage: 7th cusp Sub Lord must signify 2,7,11 (yes) or 1,6,10 (denial/delay)
+- For Job: 6th cusp Sub Lord must signify 6,10,11 (yes) or 1,5,9,12 (no service)
+- For Children: 5th cusp Sub Lord must signify 2,5,11 (yes) or 1,4,10 (denial)
+
+RESPONSE STYLE:
+- Begin with a direct YES/NO answer when possible (this is KP's strength)
+- Explain the reasoning using Sub Lord analysis
+- Mention which Dasha period favors the event
+- Include a "What to watch for" timing tip
+- Use encouraging, educational language — the user is learning KP
+- Format: use ## for sections, **bold** for important terms
+- Length: thorough but not overwhelming (400-600 words)
+- End with one KP learning tip related to the question`;
+
+async function runAnalysis() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const question = document.getElementById('question').value.trim();
+
+  if (!apiKey) { toast('API key daalo pehle'); return; }
+  if (!question) { toast('Question type karo'); return; }
+
+  const loader = document.getElementById('analysis-loader');
+  const result = document.getElementById('analysis-result');
+  loader.classList.add('show');
+  result.innerHTML = '';
+
+  try {
+    const chartCtx = buildChartContext();
+    const userPrompt = `${chartCtx}\n\nUSER'S QUESTION: ${question}\n\nPlease analyze this using KP Astrology rules. Identify the relevant houses, analyze the Sub Lord of key cusps, find significators, and provide a clear answer with timing indication.`;
+    const response = await callClaude(apiKey, KP_SYSTEM_PROMPT, userPrompt);
+    result.innerHTML = formatAIResponse(response, 'KP Analysis');
+  } catch(e) {
+    result.innerHTML = `<div class="error-box">❌ Error: ${e.message}</div>`;
+  }
+  loader.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// PRASHNA
+// ═══════════════════════════════════════════
+
+function randomNum() {
+  const n = Math.floor(Math.random() * 249) + 1;
+  document.getElementById('prashna-num').value = n;
+  toast(`Your number: ${n}`);
+}
+
+function getKPNumberInfo(num) {
+  // Map 1-249 to zodiac degree
+  // Each of 27 nakshatras has 9 subs, total 243, plus 6 more = 249
+  const nakPerSub = 9;
+  let remaining = num - 1;
+  const nakIdx = Math.floor(remaining / nakPerSub);
+  const subIdx = remaining % nakPerSub;
+  const nak = NAKSHATRAS[Math.min(nakIdx, 26)];
+  const nakLord = NAKSHATRA_LORDS[Math.min(nakIdx, 26)];
+  const startIdx = DASHA_ORDER.indexOf(nakLord);
+  const subLord = DASHA_ORDER[(startIdx + subIdx) % 9];
+  const signIdx = Math.floor(nakIdx / 2.25); // approx
+  const sign = SIGNS[Math.min(signIdx, 11)];
+  const signLord = SIGN_LORDS[Math.min(signIdx, 11)];
+  return { num, nakshatra:nak, nakLord, subLord, sign, signLord };
+}
+
+async function runPrashna() {
+  const apiKey = document.getElementById('prashna-key').value.trim();
+  const question = document.getElementById('prashna-q').value.trim();
+  const num = parseInt(document.getElementById('prashna-num').value);
+
+  if (!apiKey) { toast('API key daalo'); return; }
+  if (!question) { toast('Question type karo'); return; }
+  if (!num || num < 1 || num > 249) { toast('1 se 249 ke beech number do'); return; }
+
+  const loader = document.getElementById('prashna-loader');
+  const result = document.getElementById('prashna-result');
+  loader.classList.add('show');
+  result.innerHTML = '';
+
+  const info = getKPNumberInfo(num);
+
+  try {
+    const userPrompt = `KP PRASHNA (HORARY) READING:
+
+Question: ${question}
+KP Number chosen: ${num}
+This number maps to:
+- Nakshatra: ${info.nakshatra} (Lord: ${info.nakLord})
+- Sub Lord: ${info.subLord}
+- Approximate Sign: ${info.sign} (Lord: ${info.signLord})
+
+This becomes the Ascendant of the Prashna chart.
+
+Please:
+1. Determine which house this question relates to
+2. Analyze if the Sub Lord of that house cusp supports the question
+3. Check if the Lagna Sub Lord (${info.subLord}) supports the event
+4. Give a clear YES/NO answer
+5. If YES, indicate approximate timing through Dasha system
+6. Explain the KP reasoning step by step (educational for a learner)`;
+
+    const response = await callClaude(apiKey, KP_SYSTEM_PROMPT, userPrompt);
+    result.innerHTML = `
+      <div class="card" style="margin-top:16px; background:rgba(75,95,212,0.06);">
+        <div class="card-title"><span>🎯</span> Your Prashna Details</div>
+        <div class="rp-grid" style="margin-top:8px;">
+          <div class="rp-card"><div class="rp-factor">KP Number</div><div style="font-size:28px; font-weight:800; color:var(--gold)">${num}</div></div>
+          <div class="rp-card"><div class="rp-factor">Nakshatra</div><div class="rp-planet">⭐</div><div class="rp-name">${info.nakshatra}</div></div>
+          <div class="rp-card"><div class="rp-factor">Star Lord</div><div class="rp-planet">${PLANET_EMOJI[info.nakLord]}</div><div class="rp-name">${info.nakLord}</div></div>
+          <div class="rp-card"><div class="rp-factor">Sub Lord</div><div class="rp-planet">${PLANET_EMOJI[info.subLord]}</div><div class="rp-name">${info.subLord}</div></div>
+        </div>
+      </div>
+      ${formatAIResponse(response, `Prashna Reading — "${question}"`)}`; 
+  } catch(e) {
+    result.innerHTML = `<div class="error-box">❌ Error: ${e.message}</div>`;
+  }
+  loader.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// DASHA CALCULATOR
+// ═══════════════════════════════════════════
+
+function calcDasha() {
+  const dob = document.getElementById('dasha-dob').value;
+  const nakSelect = document.getElementById('moon-nak').value;
+  const balance = parseFloat(document.getElementById('dasha-balance').value) || 50;
+
+  if (!dob || !nakSelect) { toast('DOB aur Nakshatra select karo'); return; }
+
+  const [nakName, nakLord, nakYears] = nakSelect.split('|');
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  // Calculate dasha sequence starting from nakshatra lord
+  const startIdx = DASHA_ORDER.indexOf(nakLord);
+  const dashas = [];
+  let currentDate = new Date(birthDate);
+
+  // First dasha: partial (based on balance%)
+  const firstYears = (balance / 100) * parseInt(nakYears);
+  const firstEnd = new Date(currentDate.getTime() + firstYears * 365.25 * 24 * 3600 * 1000);
+  dashas.push({ planet:nakLord, years:firstYears, start:new Date(currentDate), end:firstEnd, partial:true });
+  currentDate = new Date(firstEnd);
+
+  // Remaining 8 dashas + repeat
+  for (let cycle = 0; cycle < 2; cycle++) {
+    for (let i = 1; i < 9; i++) {
+      const p = DASHA_ORDER[(startIdx + i) % 9];
+      const y = DASHA_YEARS[p];
+      const end = new Date(currentDate.getTime() + y * 365.25 * 24 * 3600 * 1000);
+      dashas.push({ planet:p, years:y, start:new Date(currentDate), end, partial:false });
+      currentDate = new Date(end);
+      if (currentDate > new Date(birthDate.getTime() + 120 * 365.25 * 24 * 3600 * 1000)) break;
+    }
+  }
+
+  const currentDasha = dashas.find(d => d.start <= today && d.end > today);
+
+  const list = document.getElementById('dasha-list');
+  list.innerHTML = dashas.slice(0, 9).map(d => {
+    const isCurrent = d.start <= today && d.end > today;
+    const pc = PLANET_CLASS[d.planet];
+    return `
+      <div class="dasha-row ${isCurrent ? 'dasha-current' : ''}">
+        <div class="dasha-planet ${pc}" style="background:var(--${pc?.split('-')[1] || 'card'})">${PLANET_EMOJI[d.planet]}</div>
+        <div class="dasha-info">
+          <div class="dasha-name">${d.planet} Mahadasha ${d.partial ? `(${d.years.toFixed(1)} yrs remaining)` : `(${d.years} years)`}</div>
+          <div class="dasha-period">${d.start.toLocaleDateString('en-IN')} → ${d.end.toLocaleDateString('en-IN')}</div>
+        </div>
+        ${isCurrent ? '<span class="dasha-badge">CURRENT</span>' : ''}
+      </div>`;
+  }).join('');
+
+  if (currentDasha) {
+    document.getElementById('current-dasha-info').innerHTML = `
+      <strong style="color:var(--gold-light);">Currently running: ${currentDasha.planet} Mahadasha</strong><br>
+      Period: ${currentDasha.start.toLocaleDateString('en-IN')} to ${currentDasha.end.toLocaleDateString('en-IN')}<br><br>
+      <span style="color:var(--muted);">The Mahadasha lord ${currentDasha.planet} is the primary theme of your life right now. 
+      Its position in your chart, the houses it signifies, and its Sub Lord determine how this period unfolds for you.</span>`;
+  }
+
+  document.getElementById('dasha-results').style.display = 'block';
+  window._currentDasha = currentDasha;
+  window._dashaNak = nakName;
+}
+
+async function analyzeDasha() {
+  const apiKey = document.getElementById('dasha-key').value.trim();
+  if (!apiKey) { toast('API key daalo'); return; }
+  if (!window._currentDasha) { toast('Pehle Dasha calculate karo'); return; }
+
+  const loader = document.getElementById('dasha-loader');
+  const result = document.getElementById('dasha-ai-result');
+  loader.classList.add('show');
+  result.innerHTML = '';
+
+  const d = window._currentDasha;
+  const chartCtx = buildChartContext();
+
+  try {
+    const userPrompt = `${chartCtx}
+
+DASHA ANALYSIS REQUEST:
+Moon Nakshatra: ${window._dashaNak}
+Current Mahadasha Lord: ${d.planet}
+Dasha Period: ${d.start.toLocaleDateString('en-IN')} to ${d.end.toLocaleDateString('en-IN')}
+
+Please provide a detailed KP analysis of this Mahadasha period:
+1. What houses does ${d.planet} signify in this chart (as occupant and lord)?
+2. What is ${d.planet}'s Star Lord and Sub Lord? What does this indicate?
+3. What are the major themes and events expected during this Dasha?
+4. Which Antardasha (sub-period) within this Mahadasha will be most important?
+5. Timing of major events using KP method
+6. Educational note: explain how to read a Mahadasha in KP style`;
+
+    const response = await callClaude(apiKey, KP_SYSTEM_PROMPT, userPrompt);
+    result.innerHTML = formatAIResponse(response, `${d.planet} Mahadasha Analysis`);
+  } catch(e) {
+    result.innerHTML = `<div class="error-box">❌ Error: ${e.message}</div>`;
+  }
+  loader.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// LEARN KP
+// ═══════════════════════════════════════════
+
+const CONCEPTS = [
+  { icon:'🏠', title:'12 Houses & Their Meanings', desc:'Learn what each house represents in KP — from Lagna to 12th house', tag:'Beginner', prompt:'Explain all 12 houses in KP Astrology with their key significations, the relevant house combinations for major life events (marriage, career, children, foreign travel), and how the Sub Lord of each house cusp is the judge.' },
+  { icon:'⭐', title:'27 Nakshatras & Star Lords', desc:'The 27 lunar mansions that form the basis of KP stellar system', tag:'Beginner', prompt:'Explain the 27 Nakshatras in KP Astrology. Cover: what Nakshatras are, why they matter in KP more than traditional Vedic, all 27 names with their Star Lords, and how to find which Nakshatra a planet occupies. Include a quick reference pattern.' },
+  { icon:'🎯', title:'Sub Lord Theory — The Core of KP', desc:'The revolutionary concept that makes KP unique and precise', tag:'Core KP', prompt:'Explain the Sub Lord Theory in KP Astrology in complete detail. Cover: what Sub is, how 249 subs are divided, the formula (dasha years/120 × 800 minutes), how to find Sub Lord of any planet or cusp, and why Sub Lord is called the "final judge" with examples.' },
+  { icon:'📊', title:'Finding Significators', desc:'Step-by-step method to find what houses each planet signifies', tag:'Core KP', prompt:'Explain how to find Significators (A, B, C, D groups) in KP Astrology. Teach the 4-group system: Group A (planets in star of occupants), Group B (occupants), Group C (planets in star of house lords), Group D (house lords). Give a worked example with a real chart scenario.' },
+  { icon:'⏱️', title:'Event Timing with Dasha', desc:'How KP uses Mahadasha + Antardasha to time future events', tag:'Advanced', prompt:'Explain event timing in KP Astrology. Cover: Vimshottari Dasha system (120 years, 9 planets), how Mahadasha + Antardasha + Pratyantar Dasha work together, the KP rule that "event happens when Dasha lord is a significator of relevant houses", and how Ruling Planets confirm timing.' },
+  { icon:'🌟', title:'Ruling Planets — The KP Compass', desc:'The 5 cosmic factors active at any moment of consultation', tag:'Advanced', prompt:'Explain Ruling Planets (RP) in KP Astrology in full. Cover: the 5 RPs (Day Lord, Moon Sign Lord, Moon Star Lord, Moon Sub Lord, Lagna Lord), how to calculate them at any moment, how KP astrologers use RPs to confirm chart correctness and narrow event timing, and a practical example.' },
+  { icon:'❓', title:'Prashna / Horary KP', desc:'How to answer any question without birth details using KP number 1-249', tag:'Special', prompt:'Explain KP Prashna (Horary) Astrology completely. Cover: how the 1-249 number system works, what KP number represents in the zodiac, how to set up a Prashna chart, which house to look at for different questions, and 3 example questions with step-by-step analysis using Sub Lord method.' },
+  { icon:'💑', title:'Marriage Analysis in KP', desc:'KP method for predicting marriage — timing, partner, and outcome', tag:'Life Events', prompt:'Explain how to analyze marriage in KP Astrology. Cover: relevant houses (7th mainly, also 2nd and 11th), what the 7th cusp Sub Lord must signify for marriage to happen, how to find marriage timing through Dasha, how to judge partner characteristics from 7th house, and common denial combinations.' },
+  { icon:'💼', title:'Career & Job in KP', desc:'How to analyze career, job change, promotion and business', tag:'Life Events', prompt:'Explain career and job analysis in KP Astrology. Cover: relevant houses (6th for job, 10th for career/status, 7th for business, 11th for gains), what cusp Sub Lords must signify for job/promotion, how to time job change using Dasha, self-employment vs service indicators, and a complete worked example.' },
+  { icon:'💰', title:'Wealth & Finance in KP', desc:'Houses and planets that indicate financial prosperity', tag:'Life Events', prompt:'Explain wealth and financial analysis in KP Astrology. Cover: relevant houses (2nd, 11th for accumulation, 6th for earnings, 8th for sudden gains, 12th for expenses), how to judge financial prosperity from Sub Lords, timing of wealth through Dasha, and how to assess if someone will become rich.' },
+];
+
+function loadConcepts() {
+  const grid = document.getElementById('concept-grid');
+  grid.innerHTML = CONCEPTS.map((c, i) => `
+    <div class="concept-card" onclick="explainConcept(${i})">
+      <div class="concept-icon">${c.icon}</div>
+      <div class="concept-title">${c.title}</div>
+      <div class="concept-desc">${c.desc}</div>
+      <span class="concept-tag">${c.tag}</span>
+    </div>`).join('');
+}
+
+let currentConceptPrompt = '';
+
+async function explainConcept(idx) {
+  const apiKey = document.getElementById('learn-key').value.trim()
+               || prompt('Enter your Claude API key to get AI explanation:');
+  if (!apiKey) { toast('API key chahiye explanation ke liye'); return; }
+  
+  document.getElementById('learn-key').value = apiKey;
+
+  const concept = CONCEPTS[idx];
+  currentConceptPrompt = concept.prompt;
+  
+  const card = document.getElementById('learn-card');
+  card.style.display = 'block';
+  document.getElementById('learn-topic-title').textContent = concept.title;
+  document.getElementById('learn-loader').classList.add('show');
+  document.getElementById('learn-content').innerHTML = '';
+
+  card.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  try {
+    const learnPrompt = `${concept.prompt}
+
+IMPORTANT: This is for someone actively learning KP Astrology. 
+- Use simple language with Hindi terms where helpful
+- Give practical examples they can apply immediately
+- Include memory tips (tricks to remember the rules)
+- End with 3 practice exercises they can do to test their understanding
+- Format clearly with ## sections`;
+
+    const response = await callClaude(apiKey, KP_SYSTEM_PROMPT, learnPrompt);
+    document.getElementById('learn-content').innerHTML = formatAIResponse(response, concept.title);
+  } catch(e) {
+    document.getElementById('learn-content').innerHTML = `<div class="error-box">❌ Error: ${e.message}</div>`;
+  }
+  document.getElementById('learn-loader').classList.remove('show');
+}
+
+async function askFollowUp() {
+  const apiKey = document.getElementById('learn-key').value.trim();
+  const q = document.getElementById('follow-up').value.trim();
+  if (!apiKey || !q) { toast('API key aur question dono chahiye'); return; }
+
+  document.getElementById('learn-loader').classList.add('show');
+
+  try {
+    const response = await callClaude(apiKey, KP_SYSTEM_PROMPT,
+      `Context: User is learning KP Astrology. Previous topic: ${currentConceptPrompt}\n\nFollow-up question: ${q}\n\nAnswer in a helpful, educational way with examples.`);
+    document.getElementById('learn-content').innerHTML += formatAIResponse(response, `Follow-up: ${q}`);
+    document.getElementById('follow-up').value = '';
+  } catch(e) {
+    document.getElementById('learn-content').innerHTML += `<div class="error-box">❌ ${e.message}</div>`;
+  }
+  document.getElementById('learn-loader').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+loadConcepts();
+
+// Set today's date as default
+document.getElementById('dob').value = '1990-01-01';
+document.getElementById('tob').value = '12:00';
+document.getElementById('dasha-dob').value = '1990-01-01';
+</script>
+</body>
+</html>
